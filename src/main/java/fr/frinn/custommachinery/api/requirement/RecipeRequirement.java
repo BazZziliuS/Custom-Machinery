@@ -75,8 +75,12 @@ public class RecipeRequirement<C extends IMachineComponent, R extends IRequireme
         this.delay = Mth.clamp(delay, 0.0D, 1.0D);
     }
 
+    @SuppressWarnings("unchecked")
     public C findComponent(IMachineComponentManager manager, ICraftingContext context) {
-        return manager.getComponent(this.requirement.getComponentType()).orElseThrow(() -> new ComponentNotFoundException(context.getRecipeId(), context.getMachineTile().getMachine(), requirement.getType()));
+        C component = (C) manager.getComponentDirect(this.requirement.getComponentType());
+        if(component == null)
+            throw new ComponentNotFoundException(context.getRecipeId(), context.getMachineTile().getMachine(), requirement.getType());
+        return component;
     }
 
     public CraftingResult test(IMachineComponentManager manager, ICraftingContext context) {

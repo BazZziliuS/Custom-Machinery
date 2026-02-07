@@ -5,6 +5,7 @@ import fr.frinn.custommachinery.common.crafting.CraftingContext;
 import fr.frinn.custommachinery.common.crafting.RecipeChecker;
 import fr.frinn.custommachinery.common.init.Registration;
 import fr.frinn.custommachinery.common.util.Comparators;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class MachineRecipeFinder {
                     continue;
                 if(checker.check(this.tile, this.mutableCraftingContext.setRecipe(checker.getRecipe().value(), checker.getRecipe().id()), this.inventoryChanged || immediately)) {
                     //Check if the recipe can be run on this core
-                    if((!checker.getRecipe().value().getAllowedCores().isEmpty() && !checker.getRecipe().value().getAllowedCores().contains(this.core)) || (checker.getRecipe().value().isSingleCore() && this.processor.getCores().stream().anyMatch(core -> core.getCurrentRecipe() != null && core.getCurrentRecipe().id().equals(checker.getRecipe().id()))))
+                    if((!checker.getRecipe().value().getAllowedCores().isEmpty() && !checker.getRecipe().value().getAllowedCores().contains(this.core)) || (checker.getRecipe().value().isSingleCore() && isRecipeRunningOnAnyCore(checker.getRecipe().id())))
                         continue;
                     setInventoryChanged(false);
                     return Optional.of(checker.getRecipe());
@@ -75,6 +76,16 @@ public class MachineRecipeFinder {
             setInventoryChanged(false);
         }
         return Optional.empty();
+    }
+
+    private boolean isRecipeRunningOnAnyCore(ResourceLocation recipeId) {
+        List<MachineProcessorCore> cores = this.processor.getCores();
+        for(int i = 0; i < cores.size(); i++) {
+            MachineProcessorCore core = cores.get(i);
+            if(core.getCurrentRecipe() != null && core.getCurrentRecipe().id().equals(recipeId))
+                return true;
+        }
+        return false;
     }
 
     public void setInventoryChanged(boolean changed) {

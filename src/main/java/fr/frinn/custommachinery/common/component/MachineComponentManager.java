@@ -125,6 +125,12 @@ public class MachineComponentManager implements IMachineComponentManager {
 
     @SuppressWarnings("unchecked")
     @Override
+    public <T extends IMachineComponent> T getComponentDirect(MachineComponentType<T> type) {
+        return (T)this.components.get(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
     public <T extends IMachineComponent> Optional<IComponentHandler<T>> getComponentHandler(MachineComponentType<T> type) {
         return getComponent(type).filter(component -> component instanceof IComponentHandler).map(component -> (IComponentHandler<T>)component);
     }

@@ -89,11 +89,19 @@ public class MachineProcessor implements IProcessor, ISyncableStuff {
 
         this.cores.forEach(MachineProcessorCore::tick);
 
-        if(this.tile.getStatus() != MachineStatus.IDLE && this.cores.stream().noneMatch(core -> core.getCurrentRecipe() != null)) {
+        if(this.tile.getStatus() != MachineStatus.IDLE && noCoreHasRecipe()) {
             this.tile.setStatus(MachineStatus.IDLE);
             this.tile.setCustomAppearance(null);
             this.tile.setCustomGuiElements(null);
         }
+    }
+
+    private boolean noCoreHasRecipe() {
+        for(int i = 0; i < this.cores.size(); i++) {
+            if(this.cores.get(i).getCurrentRecipe() != null)
+                return false;
+        }
+        return true;
     }
 
     private void init() {

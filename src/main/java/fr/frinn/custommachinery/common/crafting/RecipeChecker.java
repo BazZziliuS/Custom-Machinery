@@ -1,8 +1,10 @@
 package fr.frinn.custommachinery.common.crafting;
 
+import fr.frinn.custommachinery.api.component.IMachineComponent;
 import fr.frinn.custommachinery.api.crafting.ICraftingContext;
 import fr.frinn.custommachinery.api.crafting.IMachineRecipe;
 import fr.frinn.custommachinery.api.machine.MachineTile;
+import fr.frinn.custommachinery.api.requirement.IRequirement;
 import fr.frinn.custommachinery.api.requirement.RecipeRequirement;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -45,8 +47,12 @@ public class RecipeChecker<T extends Recipe<?> & IMachineRecipe> {
 
         if (!this.inventoryRequirementsOk)
             return false;
-        else
-            return this.worldRequirements.stream().allMatch(r -> checkRequirement(r, tile, context));
+
+        for(int i = 0; i < this.worldRequirements.size(); i++) {
+            if(!checkRequirement(this.worldRequirements.get(i), tile, context))
+                return false;
+        }
+        return true;
     }
 
     public RecipeHolder<T> getRecipe() {
@@ -61,7 +67,11 @@ public class RecipeChecker<T extends Recipe<?> & IMachineRecipe> {
         return this.inventoryRequirementsOk;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private boolean checkRequirement(RecipeRequirement<?, ?> requirement, MachineTile tile, ICraftingContext context) {
-        return requirement.test(tile.getComponentManager(), context).isSuccess();
+        IMachineComponent component = tile.getComponentManager().getComponentDirect(requirement.requirement().getComponentType());
+        if(component == null)
+            return false;
+        return ((IRequirement) requirement.requirement()).test(component, context);
     }
 }

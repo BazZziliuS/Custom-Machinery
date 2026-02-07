@@ -259,28 +259,37 @@ public class ItemComponentHandler extends AbstractComponentHandler<ItemMachineCo
     private final List<ItemMachineComponent> outputs = new ArrayList<>();
 
     public int getIngredientAmount(String slot, Ingredient ingredient) {
-        Predicate<ItemMachineComponent> slotPredicate = component -> slot.isEmpty() || component.getId().equals(slot);
-        return this.inputs.stream().filter(component -> ingredient.test(component.getItemStack()) && slotPredicate.test(component))
-                .mapToInt(component -> component.getItemStack().getCount())
-                .sum();
+        int amount = 0;
+        for(int i = 0; i < this.inputs.size(); i++) {
+            ItemMachineComponent component = this.inputs.get(i);
+            if((slot.isEmpty() || component.getId().equals(slot)) && ingredient.test(component.getItemStack()))
+                amount += component.getItemStack().getCount();
+        }
+        return amount;
     }
 
     public int getDurabilityAmount(String slot, ItemStack stack) {
-        Predicate<ItemMachineComponent> slotPredicate = component -> slot.isEmpty() || component.getId().equals(slot);
-        return this.inputs.stream().filter(component -> isSameItem(component.getItemStack(), stack) && component.getItemStack().isDamageableItem() && slotPredicate.test(component))
-                .mapToInt(component -> component.getItemStack().getMaxDamage() - component.getItemStack().getDamageValue())
-                .sum();
+        int amount = 0;
+        for(int i = 0; i < this.inputs.size(); i++) {
+            ItemMachineComponent component = this.inputs.get(i);
+            if((slot.isEmpty() || component.getId().equals(slot)) && isSameItem(component.getItemStack(), stack) && component.getItemStack().isDamageableItem())
+                amount += component.getItemStack().getMaxDamage() - component.getItemStack().getDamageValue();
+        }
+        return amount;
     }
 
     public int getSpaceForItem(String slot, ItemStack stack) {
-        return this.outputs.stream().filter(component -> canPlaceOutput(component, slot, stack))
-                .mapToInt(component -> {
-                    if(component.getItemStack().isEmpty())
-                        return Math.min(component.getCapacity(), stack.getMaxStackSize());
-                    else
-                        return Math.min(component.getCapacity() - component.getItemStack().getCount(), stack.getMaxStackSize() - component.getItemStack().getCount());
-                })
-                .sum();
+        int space = 0;
+        for(int i = 0; i < this.outputs.size(); i++) {
+            ItemMachineComponent component = this.outputs.get(i);
+            if(canPlaceOutput(component, slot, stack)) {
+                if(component.getItemStack().isEmpty())
+                    space += Math.min(component.getCapacity(), stack.getMaxStackSize());
+                else
+                    space += Math.min(component.getCapacity() - component.getItemStack().getCount(), stack.getMaxStackSize() - component.getItemStack().getCount());
+            }
+        }
+        return space;
     }
 
     private boolean canPlaceOutput(ItemMachineComponent component, @Nullable String slot, ItemStack stack) {
@@ -305,10 +314,13 @@ public class ItemComponentHandler extends AbstractComponentHandler<ItemMachineCo
     }
 
     public int getSpaceForDurability(String slot, ItemStack stack) {
-        Predicate<ItemMachineComponent> slotPredicate = component -> slot.isEmpty() || component.getId().equals(slot);
-        return this.inputs.stream().filter(component -> isSameItem(component.getItemStack(), stack) && component.getItemStack().isDamageableItem() && slotPredicate.test(component))
-                .mapToInt(component -> component.getItemStack().getDamageValue())
-                .sum();
+        int space = 0;
+        for(int i = 0; i < this.inputs.size(); i++) {
+            ItemMachineComponent component = this.inputs.get(i);
+            if((slot.isEmpty() || component.getId().equals(slot)) && isSameItem(component.getItemStack(), stack) && component.getItemStack().isDamageableItem())
+                space += component.getItemStack().getDamageValue();
+        }
+        return space;
     }
 
     public void removeFromInputs(String slot, Ingredient ingredient, int amount) {

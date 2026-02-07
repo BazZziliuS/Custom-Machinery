@@ -56,6 +56,17 @@ public interface IMachineComponentManager {
     /**
      * @param type The {@link MachineComponentType} to search.
      * @param <T> The component.
+     * @return The {@link IMachineComponent} or null if not found.
+     */
+    @SuppressWarnings("unchecked")
+    @Nullable
+    default <T extends IMachineComponent> T getComponentDirect(MachineComponentType<T> type) {
+        return getComponent(type).orElse(null);
+    }
+
+    /**
+     * @param type The {@link MachineComponentType} to search.
+     * @param <T> The component.
      * @return An optional {@link IComponentHandler<T>}.
      */
     <T extends IMachineComponent> Optional<IComponentHandler<T>> getComponentHandler(MachineComponentType<T> type);
